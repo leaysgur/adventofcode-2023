@@ -1,5 +1,8 @@
 const INPUTS: &str = include_str!("./inputs.txt");
 
+type Grid = Vec<Vec<char>>;
+type Pos = (usize, usize);
+
 enum Dir {
     N,
     S,
@@ -7,12 +10,10 @@ enum Dir {
     W,
 }
 
-fn main() {
-    println!("{}", INPUTS);
-
+fn parse(inputs: &str) -> (Grid, Pos) {
     let mut grid: Vec<Vec<char>> = vec![];
     let mut pos = (0, 0);
-    for (y, line) in INPUTS.lines().enumerate() {
+    for (y, line) in inputs.lines().enumerate() {
         let mut row = vec![];
         for (x, c) in line.chars().enumerate() {
             row.push(c);
@@ -24,15 +25,41 @@ fn main() {
         }
         grid.push(row);
     }
-    println!("Start: {:?}", pos);
+
+    (grid, pos)
+}
+
+fn initial_step(grid: &Grid, pos: Pos) -> (Dir, Pos) {
+    match grid[pos.1 + 1][pos.0] {
+        '|' | 'J' | 'L' => return (Dir::S, (pos.0, pos.1 + 1)),
+        _ => (),
+    }
+    match grid[pos.1 - 1][pos.0] {
+        '|' | '7' | 'F' => return (Dir::N, (pos.0, pos.1 - 1)),
+        _ => (),
+    }
+    match grid[pos.1][pos.0 + 1] {
+        '-' | 'J' | '7' => return (Dir::W, (pos.0 + 1, pos.1)),
+        _ => (),
+    }
+    match grid[pos.1][pos.0 - 1] {
+        '-' | 'L' | 'F' => return (Dir::E, (pos.0 - 1, pos.1)),
+        _ => (),
+    }
+
+    unreachable!();
+}
+
+fn main() {
+    println!("{}", INPUTS);
+
+    let (grid, start) = parse(INPUTS);
+    println!("Start: {:?}", start);
     // println!("Grid: {:?}", grid);
 
-    #[allow(unused_assignments)]
-    let (mut direction, mut steps) = (Dir::N, 0);
+    let mut steps = 0;
 
-    // XXX: Should be caclulated, but my 3 inputs satisfy this
-    pos.1 += 1;
-    direction = Dir::S;
+    let (mut direction, mut pos) = initial_step(&grid, start);
     steps += 1;
 
     loop {
@@ -43,12 +70,12 @@ fn main() {
             '|' => match direction {
                 Dir::N => pos.1 -= 1,
                 Dir::S => pos.1 += 1,
-                _ => panic!("Unexpected direction on vertical bar"),
+                _ => unreachable!(),
             },
             '-' => match direction {
                 Dir::E => pos.0 -= 1,
                 Dir::W => pos.0 += 1,
-                _ => panic!("Unexpected direction on horizontal bar"),
+                _ => unreachable!(),
             },
             'L' => match direction {
                 Dir::S => {
@@ -59,7 +86,7 @@ fn main() {
                     pos.1 -= 1;
                     direction = Dir::N
                 }
-                _ => panic!("Unexpected direction on L"),
+                _ => unreachable!(),
             },
             'J' => match direction {
                 Dir::S => {
@@ -70,7 +97,7 @@ fn main() {
                     pos.1 -= 1;
                     direction = Dir::N
                 }
-                _ => panic!("Unexpected direction on J"),
+                _ => unreachable!(),
             },
             '7' => match direction {
                 Dir::N => {
@@ -81,7 +108,7 @@ fn main() {
                     pos.1 += 1;
                     direction = Dir::S
                 }
-                _ => panic!("Unexpected direction on 7"),
+                _ => unreachable!(),
             },
             'F' => match direction {
                 Dir::N => {
@@ -92,9 +119,9 @@ fn main() {
                     pos.1 += 1;
                     direction = Dir::S
                 }
-                _ => panic!("Unexpected direction on F"),
+                _ => unreachable!(),
             },
-            _ => panic!("Unexpected character encountered"),
+            _ => unreachable!(),
         }
 
         steps += 1;
